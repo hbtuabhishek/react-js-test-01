@@ -1,59 +1,83 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import FoodItem from "./FoodItem";
 
-const FoodOrderForm = (props) =>{
-    const [enteredOrderId, setEnteredOrderId] = useState("");
-    const [enteredPrice, setEnteredPrice] = useState("");
-    const [enteredDish, setEnteredDish] = useState("");
-    const [enteredTable, setEnteredTable] = useState("");
+const getDataFromLS = () => {
+  const data = localStorage.getItem("food");
+  if (data) {
+    return JSON.parse(data);
+  } else {
+    return [];
+  }
+};
 
-    const orderChangeHandler = (event) => {
-        setEnteredOrderId(event.target.value);
-      };
-    
-      const priceChangeHandler = (event) => {
-        setEnteredPrice(event.target.value);
-      };
-    
-      const dishChangeHandler = (event) => {
-        setEnteredDish(event.target.value);
-      };
+const FoodOrderForm = (props) => {
+  const [food, setFood] = useState(getDataFromLS());
+  const [enteredOrderId, setEnteredOrderId] = useState("");
+  const [enteredPrice, setEnteredPrice] = useState("");
+  const [enteredDish, setEnteredDish] = useState("");
+  const [enteredTable, setEnteredTable] = useState("");
 
-      const tableChangeHandler = (event) => {
-        setEnteredTable(event.target.value);
-      };
-
-      const submitHandler = (event) => {
-        event.preventDefault();
-    
-        const expenseData = {
-          order: enteredOrderId,
-          price: enteredPrice,
-          dish: enteredDish,
-          table: enteredTable
-        };
-        props.onSaveExpenseData(expenseData);
-        setEnteredOrderId('');
-        setEnteredPrice('');
-        setEnteredDish('');
-        setEnteredTable('');
-      };
-    return(
-        <form onSubmit={submitHandler}>
+  const orderChangeHandler = (event) => {
+    event.preventDefault();
+    const fooddata = {
+      enteredOrderId,
+      enteredPrice,
+      enteredDish,
+      enteredTable,
+    };
+    setFood([...food, fooddata]);
+    setEnteredOrderId("");
+    setEnteredPrice("");
+    setEnteredDish("");
+    setEnteredTable("");
+  };
+  const deletefood=(enteredOrderId)=>{
+    const filteredFood=food.filter((element, index) => {
+      return element.enteredOrderId !== enteredOrderId
+    })
+setFood(filteredFood);
+  }
+  useEffect(() => {
+    localStorage.setItem("food", JSON.stringify(food));
+  }, [food]);
+  return (
+    <div>
+      <form onSubmit={orderChangeHandler}>
         <label>Unique Order ID</label>
-        <input type="number" value={enteredOrderId} onChange={orderChangeHandler}/>
+        <input
+          type="number"
+          onChange={(e) => setEnteredOrderId(e.target.value)}
+          value={enteredOrderId}
+        />
         <label>Choose Price</label>
-        <input type="number" value={enteredPrice} onChange={priceChangeHandler}/>
+        <input
+          type="number"
+          onChange={(e) => setEnteredPrice(e.target.value)}
+          value={enteredPrice}
+        />
         <label>Choose Dish</label>
-        <input type="text" value={enteredDish} onChange={dishChangeHandler}/>
+        <input
+          type="text"
+          onChange={(e) => setEnteredDish(e.target.value)}
+          value={enteredDish}
+        />
         <label>Choose a Table</label>
-        <select value={enteredTable} onChange={tableChangeHandler}>
-            <option value="table1">Table 1</option>
-            <option value="table2">Table 2</option>
-            <option value="table3">Table 3</option>
+        <select
+          onChange={(e) => setEnteredTable(e.target.value)}
+          value={enteredTable}
+        >
+          <option value="table1">Table 1</option>
+          <option value="table2">Table 2</option>
+          <option value="table3">Table 3</option>
         </select>
-        <button>Add to bill</button>
-        </form>
-    );
+        <></>
+        <button type="submit">Add to bill</button>
+      </form>
+      {<h2>|| Orders ||</h2>}
+      {food.length > 0 && <FoodItem food={food} deletefood={deletefood} />}
+      <div>{food.length < 1 && "No Food!!!"}</div>
+    </div>
+  );
 };
 
 export default FoodOrderForm;
